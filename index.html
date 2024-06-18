@@ -1,151 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boyz Sleepover Countdown</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-        
-        body {
-            font-family: 'Courier Prime', monospace;
-            background-color: black;
-            color: #00FF00;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-shadow: 0 0 5px #00FF00;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JT Boyz Sleepover Countdown</title>
+  <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #212121;
+      color: #ffffff;
+      margin: 0;
+    }
 
-        .countdown {
-            text-align: center;
-            line-height: 1.5;
-            max-width: 90%;
-            margin: auto;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-        }
+    .countdown-container {
+      text-align: center;
+    }
 
-        h1 {
-            font-size: 3em;
-            color: red;
-            text-shadow: 0 0 10px red;
-            margin-bottom: 20px;
-        }
-
-        #timer {
-            font-size: 2em;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        #timer span {
-            display: block;
-            margin: 10px 0;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        .alarm {
-            animation: blink 1s infinite;
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
+    #countdown {
+      font-size: 3rem;
+      letter-spacing: 3px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    }
+  </style>
 </head>
 <body>
-    <div class="countdown">
-        <h1>BOYZ SLEEPOVER COUNTDOWN</h1>
-        <div id="timer">
-            <span id="days">0</span> Days <br>
-            <span id="hours">0</span> Hours <br>
-            <span id="minutes">0</span> Minutes <br>
-            <span id="seconds">0</span> Seconds <br>
-            <span id="milliseconds">0</span> Milliseconds
-        </div>
-    </div>
-    <script>
-        // Check for Web Audio API support
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) {
-            alert("Web Audio API is not supported in this browser.");
+  <div class="countdown-container">
+    <h1 id="countdown">00d 00h 00m 00s</h1>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const countdownElement = document.getElementById('countdown');
+
+      // Audio context setup
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioContext();
+
+      // Oscillator for tick sound
+      const tickOscillator = audioContext.createOscillator();
+      tickOscillator.type = 'sine'; // You can experiment with different wave types
+      tickOscillator.frequency.value = 1000; // Frequency in Hz (adjust as needed)
+      tickOscillator.start(0);
+
+      // Gain node for controlling tick sound volume
+      const tickGainNode = audioContext.createGain();
+      tickGainNode.gain.value = 0.1; // Adjust volume (0.0 to 1.0)
+
+      // Connect oscillator to gain node and gain node to audio context
+      tickOscillator.connect(tickGainNode);
+      tickGainNode.connect(audioContext.destination);
+
+      // Oscillator for bass sound (square wave)
+      const bassOscillator = audioContext.createOscillator();
+      bassOscillator.type = 'square'; // Use square wave for bass effect
+      bassOscillator.frequency.value = 80; // Adjust frequency for bass effect
+      bassOscillator.start(0);
+
+      // Gain node for controlling bass sound volume
+      const bassGainNode = audioContext.createGain();
+      bassGainNode.gain.value = 0; // Initial volume (will increase over time)
+
+      // Connect oscillator to gain node and gain node to audio context
+      bassOscillator.connect(bassGainNode);
+      bassGainNode.connect(audioContext.destination);
+
+      // Set the target date for the countdown (June 18, 2024 5:00pm EDT)
+      const targetDate = new Date('June 18, 2024 17:00:00 EDT').getTime();
+
+      function updateCountdown() {
+        const currentDate = new Date().getTime();
+        const timeDifference = targetDate - currentDate;
+
+        if (timeDifference > 0) {
+          const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+          countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+          // Play tick sound every second
+          tickGainNode.gain.value = 0.1; // Ensure tick sound is audible
+          tickOscillator.frequency.value = 1000; // Adjust frequency if needed
+          tickOscillator.start();
+
+          // Adjust bass sound volume based on time left (linear interpolation)
+          const timeRatio = 1 - (timeDifference / (1000 * 60 * 60 * 24 * 3)); // Adjust divisor for effect duration
+          bassGainNode.gain.value = timeRatio; // Gradually increase volume
+          bassOscillator.frequency.value = 80; // Adjust frequency for bass effect
+          bassOscillator.start();
+
+          // If very close to target time, increase tick volume and bass volume
+          if (timeDifference < 5000) {
+            tickGainNode.gain.value = 1; // Max tick volume
+            bassGainNode.gain.value = 1; // Max bass volume
+          }
+        } else {
+          countdownElement.textContent = 'Countdown finished!';
+          tickOscillator.stop();
+          bassOscillator.stop();
         }
+      }
 
-        const audioContext = new AudioContext();
-        const gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
-
-        const baseFrequency = 50; // Base frequency for the sound
-        const maxFrequency = 200; // Maximum frequency to reach
-        const minVolume = 0.1;    // Minimum volume level
-        const maxVolume = 1.0;    // Maximum volume level
-        const duration = 10;      // Duration of each millisecond tick (in milliseconds)
-
-        let volume = minVolume;
-
-        function playSound(frequency, duration) {
-            const oscillator = audioContext.createOscillator();
-            oscillator.connect(gainNode);
-            oscillator.type = 'square'; // Use square wave for Atari-like bass
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + (duration / 1000));
-        }
-
-        function lerp(min, max, t) {
-            return min + (max - min) * t;
-        }
-
-        function countdown() {
-            const targetDate = new Date('June 18, 2024 17:00:00 GMT-0400').getTime();  // Eastern Daylight Time
-            const timerElement = document.getElementById('timer');
-
-            let lastSecond = -1;
-
-            const interval = setInterval(() => {
-                const now = new Date().getTime();
-                const distance = targetDate - now;
-
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                const milliseconds = Math.floor(distance % 1000);
-
-                document.getElementById('days').innerHTML = days;
-                document.getElementById('hours').innerHTML = hours;
-                document.getElementById('minutes').innerHTML = minutes;
-                document.getElementById('seconds').innerHTML = seconds;
-                document.getElementById('milliseconds').innerHTML = milliseconds;
-
-                // Play sound effect for milliseconds
-                playSound(baseFrequency + milliseconds * 2, duration);
-
-                // Adjust volume based on proximity to target time
-                const proximityFactor = distance / (1000 * 60 * 60); // Adjust as needed
-                const targetVolume = lerp(minVolume, maxVolume, 1 - (distance / (1000 * 60 * 60 * 24))); // Lerping volume
-
-                gainNode.gain.setValueAtTime(targetVolume, audioContext.currentTime);
-
-                if (distance < 0) {
-                    clearInterval(interval);
-                    timerElement.innerHTML = "<span class='alarm'>ALERT! TIME IS UP!</span>";
-                    // Play alarm sound here if needed
-                }
-            }, 1); // Check every millisecond for accuracy
-        }
-
-        countdown();
-    </script>
+      // Update countdown every second
+      setInterval(updateCountdown, 1000);
+    });
+  </script>
 </body>
 </html>
