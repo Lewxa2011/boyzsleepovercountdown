@@ -5,37 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boyz Sleepover Countdown</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
         
         body {
-            font-family: 'Orbitron', sans-serif;
-            background: black;
+            font-family: 'Courier Prime', monospace;
+            background-color: black;
             color: #00FF00;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            text-shadow: 0 0 5px #00FF00;
         }
 
         .countdown {
             text-align: center;
+            line-height: 1.5;
         }
 
         h1 {
-            font-size: 2em;
+            font-size: 3em;
             color: red;
             text-shadow: 0 0 10px red;
+            margin-bottom: 40px;
         }
 
         #timer {
-            font-size: 3em;
+            font-size: 2em;
             margin-top: 20px;
         }
 
         #timer span {
-            display: inline-block;
-            min-width: 50px;
+            display: block;
+            margin: 10px 0;
         }
 
         @keyframes blink {
@@ -46,17 +49,21 @@
         .alarm {
             animation: blink 1s infinite;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="countdown">
         <h1>BOYZ SLEEPOVER COUNTDOWN</h1>
         <div id="timer">
-            <span id="days"></span> Days 
-            <span id="hours"></span> Hours 
-            <span id="minutes"></span> Minutes 
-            <span id="seconds"></span> Seconds 
-            <span id="milliseconds"></span> Milliseconds
+            <span id="days">0</span> Days 
+            <span id="hours">0</span> Hours 
+            <span id="minutes">0</span> Minutes 
+            <span id="seconds">0</span> Seconds 
+            <span id="milliseconds">0</span> Milliseconds
         </div>
     </div>
     <audio id="alarm-sound" src="https://www.soundjay.com/communication/sounds/nuclear-alarm-01.mp3" preload="auto"></audio>
@@ -66,7 +73,7 @@
     <audio id="hour-bell-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
     <script>
         function countdown() {
-            const targetDate = new Date('June 16, 2024 17:00:00 EDT').getTime();
+            const targetDate = new Date('June 18, 2024 17:00:00 GMT-0400').getTime();  // Eastern Daylight Time
             const timerElement = document.getElementById('timer');
             const alarmSound = document.getElementById('alarm-sound');
             const tickSound = document.getElementById('tick-sound');
@@ -78,7 +85,7 @@
             let lastMinute = -1;
             let lastHour = -1;
 
-            setInterval(() => {
+            const interval = setInterval(() => {
                 const now = new Date().getTime();
                 const distance = targetDate - now;
 
@@ -114,7 +121,7 @@
                 }
 
                 if (distance < 0) {
-                    clearInterval(x);
+                    clearInterval(interval);
                     timerElement.innerHTML = "<span class='alarm'>ALERT! TIME IS UP!</span>";
                     alarmSound.play();
                 }
