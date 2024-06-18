@@ -73,17 +73,23 @@
         </div>
     </div>
     <script>
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Check for Web Audio API support
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+            alert("Web Audio API is not supported in this browser.");
+        }
+
+        const audioContext = new AudioContext();
         const gainNode = audioContext.createGain();
         gainNode.connect(audioContext.destination);
 
         const baseFrequency = 50; // Base frequency for the sound
         const maxFrequency = 200; // Maximum frequency to reach
-        const baseVolume = 0.5;   // Base volume level
+        const minVolume = 0.1;    // Minimum volume level
         const maxVolume = 1.0;    // Maximum volume level
         const duration = 10;      // Duration of each millisecond tick (in milliseconds)
 
-        let volume = baseVolume;
+        let volume = minVolume;
 
         function playSound(frequency, duration) {
             const oscillator = audioContext.createOscillator();
@@ -94,6 +100,10 @@
             
             oscillator.start();
             oscillator.stop(audioContext.currentTime + (duration / 1000));
+        }
+
+        function lerp(min, max, t) {
+            return min + (max - min) * t;
         }
 
         function countdown() {
@@ -123,7 +133,9 @@
 
                 // Adjust volume based on proximity to target time
                 const proximityFactor = distance / (1000 * 60 * 60); // Adjust as needed
-                volume = baseVolume + proximityFactor * (maxVolume - baseVolume);
+                const targetVolume = lerp(minVolume, maxVolume, 1 - (distance / (1000 * 60 * 60 * 24))); // Lerping volume
+
+                gainNode.gain.setValueAtTime(targetVolume, audioContext.currentTime);
 
                 if (distance < 0) {
                     clearInterval(interval);
