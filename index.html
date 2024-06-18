@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boyz Sleepover Countdown</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+        
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: black;
+            color: #00FF00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .countdown {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: red;
+            text-shadow: 0 0 10px red;
+        }
+
+        #timer {
+            font-size: 3em;
+            margin-top: 20px;
+        }
+
+        #timer span {
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .alarm {
+            animation: blink 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown">
+        <h1>BOYZ SLEEPOVER COUNTDOWN</h1>
+        <div id="timer">
+            <span id="days"></span> Days 
+            <span id="hours"></span> Hours 
+            <span id="minutes"></span> Minutes 
+            <span id="seconds"></span> Seconds 
+            <span id="milliseconds"></span> Milliseconds
+        </div>
+    </div>
+    <audio id="alarm-sound" src="https://www.soundjay.com/communication/sounds/nuclear-alarm-01.mp3" preload="auto"></audio>
+    <audio id="tick-sound" src="https://www.soundjay.com/button/sounds/button-4.mp3" preload="auto"></audio>
+    <audio id="ms-tick-sound" src="https://www.soundjay.com/button/sounds/button-1.mp3" preload="auto"></audio>
+    <audio id="minute-tick-sound" src="https://www.soundjay.com/button/sounds/button-2.mp3" preload="auto"></audio>
+    <audio id="hour-bell-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+    <script>
+        function countdown() {
+            const targetDate = new Date('June 16, 2024 17:00:00 EDT').getTime();
+            const timerElement = document.getElementById('timer');
+            const alarmSound = document.getElementById('alarm-sound');
+            const tickSound = document.getElementById('tick-sound');
+            const msTickSound = document.getElementById('ms-tick-sound');
+            const minuteTickSound = document.getElementById('minute-tick-sound');
+            const hourBellSound = document.getElementById('hour-bell-sound');
+
+            let lastSecond = -1;
+            let lastMinute = -1;
+            let lastHour = -1;
+
+            setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                const milliseconds = Math.floor(distance % 1000);
+
+                document.getElementById('days').innerHTML = days;
+                document.getElementById('hours').innerHTML = hours;
+                document.getElementById('minutes').innerHTML = minutes;
+                document.getElementById('seconds').innerHTML = seconds;
+                document.getElementById('milliseconds').innerHTML = milliseconds;
+
+                if (seconds !== lastSecond) {
+                    tickSound.play();
+                    lastSecond = seconds;
+                }
+
+                if (milliseconds % 100 === 0) {
+                    msTickSound.play();
+                }
+
+                if (minutes !== lastMinute) {
+                    minuteTickSound.play();
+                    lastMinute = minutes;
+                }
+
+                if (hours !== lastHour) {
+                    hourBellSound.play();
+                    lastHour = hours;
+                }
+
+                if (distance < 0) {
+                    clearInterval(x);
+                    timerElement.innerHTML = "<span class='alarm'>ALERT! TIME IS UP!</span>";
+                    alarmSound.play();
+                }
+            }, 10);
+        }
+
+        countdown();
+    </script>
+</body>
+</html>
