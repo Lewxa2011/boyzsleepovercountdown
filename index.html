@@ -44,7 +44,6 @@
       const tickOscillator = audioContext.createOscillator();
       tickOscillator.type = 'sine'; // You can experiment with different wave types
       tickOscillator.frequency.value = 1000; // Frequency in Hz (adjust as needed)
-      tickOscillator.start(0);
 
       // Gain node for controlling tick sound volume
       const tickGainNode = audioContext.createGain();
@@ -58,7 +57,6 @@
       const bassOscillator = audioContext.createOscillator();
       bassOscillator.type = 'square'; // Use square wave for bass effect
       bassOscillator.frequency.value = 80; // Adjust frequency for bass effect
-      bassOscillator.start(0);
 
       // Gain node for controlling bass sound volume
       const bassGainNode = audioContext.createGain();
@@ -67,6 +65,10 @@
       // Connect oscillator to gain node and gain node to audio context
       bassOscillator.connect(bassGainNode);
       bassGainNode.connect(audioContext.destination);
+
+      // Start oscillators
+      tickOscillator.start();
+      bassOscillator.start();
 
       // Set the target date for the countdown (June 18, 2024 5:00pm EDT)
       const targetDate = new Date('June 18, 2024 17:00:00 EDT').getTime();
@@ -85,14 +87,10 @@
 
           // Play tick sound every second
           tickGainNode.gain.value = 0.1; // Ensure tick sound is audible
-          tickOscillator.frequency.value = 1000; // Adjust frequency if needed
-          tickOscillator.start();
 
           // Adjust bass sound volume based on time left (linear interpolation)
           const timeRatio = 1 - (timeDifference / (1000 * 60 * 60 * 24 * 3)); // Adjust divisor for effect duration
           bassGainNode.gain.value = timeRatio; // Gradually increase volume
-          bassOscillator.frequency.value = 80; // Adjust frequency for bass effect
-          bassOscillator.start();
 
           // If very close to target time, increase tick volume and bass volume
           if (timeDifference < 5000) {
