@@ -72,32 +72,35 @@
             <span id="milliseconds">0</span> Milliseconds
         </div>
     </div>
-    <audio id="bell-sound" src="https://www.soundjay.com/button/sounds/button-3.mp3" preload="auto" loop></audio>
     <script>
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const gainNode = audioContext.createGain();
         gainNode.connect(audioContext.destination);
 
-        const baseFrequency = 440; // Base frequency for the sound
-        const maxFrequency = 1760; // Maximum frequency to reach
+        const baseFrequency = 50; // Base frequency for the sound
+        const maxFrequency = 200; // Maximum frequency to reach
+        const baseVolume = 0.5;   // Base volume level
+        const maxVolume = 1.0;    // Maximum volume level
+        const duration = 10;      // Duration of each millisecond tick (in milliseconds)
+
+        let volume = baseVolume;
 
         function playSound(frequency, duration) {
             const oscillator = audioContext.createOscillator();
             oscillator.connect(gainNode);
-            oscillator.type = 'sine';
+            oscillator.type = 'square'; // Use square wave for Atari-like bass
             oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+            
             oscillator.start();
-            oscillator.stop(audioContext.currentTime + duration);
+            oscillator.stop(audioContext.currentTime + (duration / 1000));
         }
 
         function countdown() {
             const targetDate = new Date('June 18, 2024 17:00:00 GMT-0400').getTime();  // Eastern Daylight Time
             const timerElement = document.getElementById('timer');
-            const bellSound = document.getElementById('bell-sound');
 
             let lastSecond = -1;
-            let lastMinute = -1;
-            let lastHour = -1;
 
             const interval = setInterval(() => {
                 const now = new Date().getTime();
@@ -115,21 +118,19 @@
                 document.getElementById('seconds').innerHTML = seconds;
                 document.getElementById('milliseconds').innerHTML = milliseconds;
 
-                if (seconds !== lastSecond) {
-                    // Play sound effect for seconds
-                    playSound(baseFrequency + seconds * 10, 50);
-                    lastSecond = seconds;
-                }
+                // Play sound effect for milliseconds
+                playSound(baseFrequency + milliseconds * 2, duration);
+
+                // Adjust volume based on proximity to target time
+                const proximityFactor = distance / (1000 * 60 * 60); // Adjust as needed
+                volume = baseVolume + proximityFactor * (maxVolume - baseVolume);
 
                 if (distance < 0) {
                     clearInterval(interval);
                     timerElement.innerHTML = "<span class='alarm'>ALERT! TIME IS UP!</span>";
                     // Play alarm sound here if needed
                 }
-            }, 10);
-
-            // Start playing the bell sound
-            bellSound.play();
+            }, 1); // Check every millisecond for accuracy
         }
 
         countdown();
